@@ -1,7 +1,6 @@
 import argparse
 import pickle
 import random
-from gensim.models.word2vec import Word2Vec
 import os
 import string
 
@@ -22,7 +21,7 @@ def make_pairs(corpus):
         yield (corpus[i], corpus[i + 1])
 
 
-class TextGen:
+class Words_generator:
     def __init__(self) -> None:
         pass
 
@@ -32,7 +31,7 @@ class TextGen:
         corpus = ""
         for file_name in file_lst:
             text = open(os.path.join(data, file_name), encoding = "utf-8").read().lower()
-            str_punct = string.punctuation
+            str_punct = string.punctuation  #Characters to delete
             str_punct += '—' + '»' + '«'
             for p in str_punct:
                 if p in text:
@@ -41,20 +40,21 @@ class TextGen:
                     text = text.replace(p, '')
             corpus += text
 
-        corpus = text.split()
+        corpus = text.split() 
+
         pairs = make_pairs(corpus)
 
         word_dict = {}
-
-        for word_1, word_2 in pairs:
+        for word_1, word_2 in pairs: #creating texts dictionarty
             if word_1 in word_dict.keys():
                 word_dict[word_1].append(word_2)
             else:
                 word_dict[word_1] = [word_2]
         save_obj(word_dict, dictionary_file)
+        
         lst = list()
         lst.append(corpus)
-        model = Word2Vec(lst, min_count = 1)
+        model = Word2Vec(lst, min_count = 1) #creating w2v model
         model.save(model_file)
 
 
@@ -77,13 +77,13 @@ class TextGen:
                 word = random.choice(list(word_dict))
             chain.append(str(word))
         s = ' '.join(chain)
-        print(s[1:])
+        print(s[0:])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--inputdir", default="./data/", help="Path to directory with texts")
-    parser.add_argument("--model", default="w2v_model", help="This is the path to the file where model will be saved")
+    parser.add_argument("--model", default="w2v_model", help="Path to word2vec model save file")
 
     args = parser.parse_args()
-    gen = TextGen()
+    gen = Words_generator()
     gen.fit(args.inputdir, args.model, "dict.pkl")
